@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAOR - Gestión de Citas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --maor-primary: #8e44ad;
+            --maor-secondary: #9b59b6;
+            --maor-light: #f5eef8;
+        }
+        .sidebar {
+            background-color: var(--maor-primary);
+            color: white;
+            transition: all 0.3s;
+        }
+        .sidebar-item {
+            transition: all 0.2s;
+            border-radius: 5px;
+        }
+        .sidebar-item:hover {
+            background-color: var(--maor-secondary);
+            transform: translateX(5px);
+        }
+        .sidebar-item.active {
+            background-color: var(--maor-secondary);
+            font-weight: 500;
+        }
+        .btn-maor {
+            background-color: var(--maor-primary);
+            color: white;
+        }
+        .btn-maor:hover {
+            background-color: var(--maor-secondary);
+            color: white;
+        }
+        .appointment-card {
+            transition: all 0.3s;
+            border-left: 4px solid var(--maor-primary);
+        }
+        .appointment-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+        }
+        .filter-section {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .client-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--maor-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+        .whatsapp-btn {
+            background-color: #25D366;
+            color: white;
+        }
+        .whatsapp-btn:hover {
+            background-color: #128C7E;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar vh-100 p-3" style="width: 280px; position: fixed; left: 0; top: 0;">
+            <div class="text-center mb-4 pt-3">
+                <h2><i class="fas fa-spa me-2"></i>MAOR</h2>
+                <p class="small mb-0">Centro de Belleza - Sincelejo</p>
+                <hr class="bg-light">
+                <div class="text-start mt-4">
+                    <h5 class="text-white-50 mb-3"><small>MENÚ CAJERO</small></h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-2">
+                            <a href="dashboard-general.html" class="nav-link text-white sidebar-item p-2">
+                                <i class="fas fa-users me-2"></i>Clientes
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="./parte-2.html" class="nav-link text-white sidebar-item p-2">
+                                <i class="fas fa-users me-2"></i>Clientes en Local
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="#" class="nav-link text-white sidebar-item active p-2">
+                                <i class="fas fa-calendar-alt me-2"></i>Gestión de Citas
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="position-absolute bottom-0 start-0 p-3 w-100">
+                <div class="d-flex align-items-center p-2" style="background-color: rgba(0,0,0,0.2); border-radius: 5px;">
+                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Usuario">
+                    <div>
+                        <small class="d-block">Usuario Cajero</small>
+                        <small class="text-white-50">Cajero Principal</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido principal - Gestión de Citas -->
+        <div class="flex-grow-1 p-4" style="margin-left: 280px;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-calendar-alt me-2"></i>Gestión de Citas</h2>
+                <button class="btn btn-maor" data-bs-toggle="modal" data-bs-target="#newAppointmentModal">
+                    <i class="fas fa-plus-circle me-2"></i>Nueva Cita
+                </button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filter-section">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="filterDate" class="form-label">Fecha</label>
+                        <input type="date" class="form-control" id="filterDate">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="filterStatus" class="form-label">Estado</label>
+                        <select class="form-select" id="filterStatus">
+                            <option value="all">Todos los estados</option>
+                            <option value="pending">Pendiente</option>
+                            <option value="confirmed">Confirmada</option>
+                            <option value="completed">Completada</option>
+                            <option value="canceled">Cancelada</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="filterProfessional" class="form-label">Profesional</label>
+                        <select class="form-select" id="filterProfessional">
+                            <option value="all">Todos los profesionales</option>
+                            <option value="1">Dra. Laura Martínez</option>
+                            <option value="2">Est. Sofía Rodríguez</option>
+                            <option value="3">Lic. Carolina Gómez</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-maor w-100" onclick="filterAppointments()">
+                            <i class="fas fa-filter me-2"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listado de Citas -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Próximas Citas</h4>
+                    <div>
+                        <span class="badge bg-primary me-2">5 citas hoy</span>
+                        <span class="badge bg-secondary">3 pendientes de confirmación</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Cita 1 -->
+                    <div class="card appointment-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center">
+                                    <div class="client-avatar bg-purple-100 text-purple-800">
+                                        👩
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0">María González</h5>
+                                        <p class="mb-1 text-muted small">
+                                            <i class="fas fa-phone-alt me-1"></i>300 123 4567
+                                            <span class="mx-2">|</span>
+                                            <i class="fas fa-user-md me-1"></i>Dra. Laura Martínez
+                                        </p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="badge bg-warning text-dark status-badge">Pendiente</span>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="far fa-calendar-alt me-2"></i>Fecha</strong></p>
+                                    <p class="mb-0">15 Jun 2023</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="far fa-clock me-2"></i>Hora</strong></p>
+                                    <p class="mb-0">09:00 AM - 10:30 AM</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="fas fa-spa me-2"></i>Servicio</strong></p>
+                                    <p class="mb-0">Tratamiento Facial Premium</p>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-sm btn-outline-secondary me-2" onclick="editAppointment(1)">
+                                    <i class="fas fa-edit me-1"></i>Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger me-2" onclick="cancelAppointment(1)">
+                                    <i class="fas fa-times me-1"></i>Cancelar
+                                </button>
+                                <button class="btn btn-sm btn-success me-2" onclick="confirmAppointment(1)">
+                                    <i class="fas fa-check me-1"></i>Confirmar
+                                </button>
+                                <button class="btn btn-sm whatsapp-btn" onclick="sendWhatsAppReminder(1)">
+                                    <i class="fab fa-whatsapp me-1"></i>Recordatorio
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cita 2 -->
+                    <div class="card appointment-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center">
+                                    <div class="client-avatar bg-blue-100 text-blue-800">
+                                        👨
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0">Carlos Ramírez</h5>
+                                        <p class="mb-1 text-muted small">
+                                            <i class="fas fa-phone-alt me-1"></i>320 456 7891
+                                            <span class="mx-2">|</span>
+                                            <i class="fas fa-user-md me-1"></i>Dra. Laura Martínez
+                                        </p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="badge bg-success status-badge">Confirmada</span>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="far fa-calendar-alt me-2"></i>Fecha</strong></p>
+                                    <p class="mb-0">15 Jun 2023</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="far fa-clock me-2"></i>Hora</strong></p>
+                                    <p class="mb-0">10:30 AM - 11:15 AM</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="fas fa-spa me-2"></i>Servicio</strong></p>
+                                    <p class="mb-0">Depilación Láser</p>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-sm btn-outline-secondary me-2" onclick="editAppointment(2)">
+                                    <i class="fas fa-edit me-1"></i>Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger me-2" onclick="cancelAppointment(2)">
+                                    <i class="fas fa-times me-1"></i>Cancelar
+                                </button>
+                                <button class="btn btn-sm btn-outline-success me-2" disabled>
+                                    <i class="fas fa-check me-1"></i>Confirmar
+                                </button>
+                                <button class="btn btn-sm whatsapp-btn" onclick="sendWhatsAppReminder(2)">
+                                    <i class="fab fa-whatsapp me-1"></i>Recordatorio
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cita 3 -->
+                    <div class="card appointment-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center">
+                                    <div class="client-avatar bg-pink-100 text-pink-800">
+                                        👩
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0">Ana López</h5>
+                                        <p class="mb-1 text-muted small">
+                                            <i class="fas fa-phone-alt me-1"></i>310 987 6543
+                                            <span class="mx-2">|</span>
+                                            <i class="fas fa-user-md me-1"></i>Est. Sofía Rodríguez
+                                        </p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="badge bg-success status-badge">Confirmada</span>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="far fa-calendar-alt me-2"></i>Fecha</strong></p>
+                                    <p class="mb-0">15 Jun 2023</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="far fa-clock me-2"></i>Hora</strong></p>
+                                    <p class="mb-0">11:15 AM - 12:00 PM</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="fas fa-spa me-2"></i>Servicio</strong></p>
+                                    <p class="mb-0">Manicura Semipermanente</p>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-sm btn-outline-secondary me-2" onclick="editAppointment(3)">
+                                    <i class="fas fa-edit me-1"></i>Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger me-2" onclick="cancelAppointment(3)">
+                                    <i class="fas fa-times me-1"></i>Cancelar
+                                </button>
+                                <button class="btn btn-sm btn-outline-success me-2" disabled>
+                                    <i class="fas fa-check me-1"></i>Confirmar
+                                </button>
+                                <button class="btn btn-sm whatsapp-btn" onclick="sendWhatsAppReminder(3)">
+                                    <i class="fab fa-whatsapp me-1"></i>Recordatorio
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cita 4 -->
+                    <div class="card appointment-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center">
+                                    <div class="client-avatar bg-green-100 text-green-800">
+                                        👩
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0">Luisa Fernández</h5>
+                                        <p class="mb-1 text-muted small">
+                                            <i class="fas fa-phone-alt me-1"></i>315 789 1234
+                                            <span class="mx-2">|</span>
+                                            <i class="fas fa-user-md me-1"></i>Lic. Carolina Gómez
+                                        </p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="badge bg-warning text-dark status-badge">Pendiente</span>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="far fa-calendar-alt me-2"></i>Fecha</strong></p>
+                                    <p class="mb-0">15 Jun 2023</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="far fa-clock me-2"></i>Hora</strong></p>
+                                    <p class="mb-0">02:00 PM - 03:00 PM</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="fas fa-spa me-2"></i>Servicio</strong></p>
+                                    <p class="mb-0">Masaje Relajante</p>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-sm btn-outline-secondary me-2" onclick="editAppointment(4)">
+                                    <i class="fas fa-edit me-1"></i>Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger me-2" onclick="cancelAppointment(4)">
+                                    <i class="fas fa-times me-1"></i>Cancelar
+                                </button>
+                                <button class="btn btn-sm btn-success me-2" onclick="confirmAppointment(4)">
+                                    <i class="fas fa-check me-1"></i>Confirmar
+                                </button>
+                                <button class="btn btn-sm whatsapp-btn" onclick="sendWhatsAppReminder(4)">
+                                    <i class="fab fa-whatsapp me-1"></i>Recordatorio
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cita 5 -->
+                    <div class="card appointment-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center">
+                                    <div class="client-avatar bg-yellow-100 text-yellow-800">
+                                        👩
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0">Patricia Gómez</h5>
+                                        <p class="mb-1 text-muted small">
+                                            <i class="fas fa-phone-alt me-1"></i>317 321 6549
+                                            <span class="mx-2">|</span>
+                                            <i class="fas fa-user-md me-1"></i>Est. Sofía Rodríguez
+                                        </p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="badge bg-danger status-badge">Cancelada</span>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="far fa-calendar-alt me-2"></i>Fecha</strong></p>
+                                    <p class="mb-0">15 Jun 2023</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="far fa-clock me-2"></i>Hora</strong></p>
+                                    <p class="mb-0">03:30 PM - 04:30 PM</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong><i class="fas fa-spa me-2"></i>Servicio</strong></p>
+                                    <p class="mb-0">Maquillaje Profesional</p>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-sm btn-outline-secondary me-2" onclick="editAppointment(5)">
+                                    <i class="fas fa-edit me-1"></i>Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger me-2" disabled>
+                                    <i class="fas fa-times me-1"></i>Cancelar
+                                </button>
+                                <button class="btn btn-sm btn-outline-success me-2" disabled>
+                                    <i class="fas fa-check me-1"></i>Confirmar
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" disabled>
+                                    <i class="fab fa-whatsapp me-1"></i>Recordatorio
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Siguiente</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para nueva cita -->
+    <div class="modal fade" id="newAppointmentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background-color: var(--maor-primary);">
+                    <h5 class="modal-title"><i class="fas fa-calendar-plus me-2"></i>Nueva Cita</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="appointmentForm">
+                        <div class="mb-3">
+                            <label for="appointmentClient" class="form-label">Cliente</label>
+                            <select class="form-select" id="appointmentClient" required>
+                                <option value="">Seleccionar cliente...</option>
+                                <option value="1">María González (CC 123456789)</option>
+                                <option value="2">Carlos Ramírez (CC 456789123)</option>
+                                <option value="3">Ana López (CC 987654321)</option>
+                                <option value="4">Luisa Fernández (CC 789123456)</option>
+                                <option value="5">Patricia Gómez (CC 321654987)</option>
+                                <option value="new">+ Registrar nuevo cliente</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="appointmentService" class="form-label">Servicio</label>
+                            <select class="form-select" id="appointmentService" required>
+                                <option value="">Seleccionar servicio...</option>
+                                <option value="facial">Tratamiento Facial Premium</option>
+                                <option value="corporal">Tratamiento Corporal</option>
+                                <option value="depilacion">Depilación Láser</option>
+                                <option value="masaje">Masaje Relajante</option>
+                                <option value="manicura">Manicura/Pedicura</option>
+                                <option value="maquillaje">Maquillaje Profesional</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="appointmentProfessional" class="form-label">Profesional</label>
+                            <select class="form-select" id="appointmentProfessional" required>
+                                <option value="">Seleccionar profesional...</option>
+                                <option value="1">Dra. Laura Martínez</option>
+                                <option value="2">Est. Sofía Rodríguez</option>
+                                <option value="3">Lic. Carolina Gómez</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="appointmentDate" class="form-label">Fecha</label>
+                                <input type="date" class="form-control" id="appointmentDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="appointmentTime" class="form-label">Hora</label>
+                                <input type="time" class="form-control" id="appointmentTime" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="appointmentDuration" class="form-label">Duración (minutos)</label>
+                            <input type="number" class="form-control" id="appointmentDuration" value="60" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="appointmentNotes" class="form-label">Notas</label>
+                            <textarea class="form-control" id="appointmentNotes" rows="3"></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn text-white" style="background-color: var(--maor-primary);">
+                                <i class="fas fa-save me-2"></i>Guardar Cita
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación de recordatorio -->
+    <div class="modal fade" id="reminderConfirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background-color: var(--maor-primary);">
+                    <h5 class="modal-title"><i class="fab fa-whatsapp me-2"></i>Enviar Recordatorio</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro que deseas enviar un recordatorio por WhatsApp al cliente?</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Se abrirá WhatsApp con el mensaje preparado.
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="includeDetails" checked>
+                        <label class="form-check-label" for="includeDetails">
+                            Incluir detalles de la cita
+                        </label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <textarea class="form-control" placeholder="Mensaje personalizado" id="customMessage" style="height: 100px"></textarea>
+                        <label for="customMessage">Mensaje personalizado (opcional)</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn whatsapp-btn" onclick="confirmSendReminder()">
+                        <i class="fab fa-whatsapp me-2"></i>Enviar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <script>
+        // Datos de ejemplo de citas
+        const appointments = {
+            1: {
+                id: 1,
+                client: "María González",
+                phone: "3001234567",
+                service: "Tratamiento Facial Premium",
+                professional: "Dra. Laura Martínez",
+                date: "2023-06-15",
+                time: "09:00",
+                duration: 90,
+                status: "pending",
+                notes: "Cliente preferente, traer productos especiales"
+            },
+            2: {
+                id: 2,
+                client: "Carlos Ramírez",
+                phone: "3204567891",
+                service: "Depilación Láser",
+                professional: "Dra. Laura Martínez",
+                date: "2023-06-15",
+                time: "10:30",
+                duration: 45,
+                status: "confirmed",
+                notes: "Primera sesión de depilación"
+            },
+            3: {
+                id: 3,
+                client: "Ana López",
+                phone: "3109876543",
+                service: "Manicura Semipermanente",
+                professional: "Est. Sofía Rodríguez",
+                date: "2023-06-15",
+                time: "11:15",
+                duration: 45,
+                status: "confirmed",
+                notes: "Preferencia por colores nude"
+            },
+            4: {
+                id: 4,
+                client: "Luisa Fernández",
+                phone: "3157891234",
+                service: "Masaje Relajante",
+                professional: "Lic. Carolina Gómez",
+                date: "2023-06-15",
+                time: "14:00",
+                duration: 60,
+                status: "pending",
+                notes: "Alergia a aceites de almendras"
+            },
+            5: {
+                id: 5,
+                client: "Patricia Gómez",
+                phone: "3173216549",
+                service: "Maquillaje Profesional",
+                professional: "Est. Sofía Rodríguez",
+                date: "2023-06-15",
+                time: "15:30",
+                duration: 60,
+                status: "canceled",
+                notes: "Cancelado por cliente - reprogramar"
+            }
+        };
+
+        // Variable para almacenar la cita actual para el recordatorio
+        let currentReminderAppointment = null;
+
+        // Función para filtrar citas
+        function filterAppointments() {
+            const dateFilter = document.getElementById('filterDate').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+            const professionalFilter = document.getElementById('filterProfessional').value;
+            
+            console.log("Filtrando citas con:", {
+                dateFilter,
+                statusFilter,
+                professionalFilter
+            });
+            
+            // Aquí iría la lógica para filtrar las citas en una implementación real
+            alert("Filtros aplicados:\nFecha: " + (dateFilter || 'Todas') + 
+                  "\nEstado: " + (statusFilter === 'all' ? 'Todos' : statusFilter) + 
+                  "\nProfesional: " + (professionalFilter === 'all' ? 'Todos' : document.getElementById('filterProfessional').options[document.getElementById('filterProfessional').selectedIndex].text));
+        }
+
+        // Función para editar cita
+        function editAppointment(id) {
+            const appointment = appointments[id];
+            if (appointment) {
+                // Rellenar el formulario con los datos de la cita
+                document.getElementById('appointmentClient').value = id;
+                document.getElementById('appointmentService').value = appointment.service.toLowerCase().replace(/ /g, '_');
+                document.getElementById('appointmentProfessional').value = appointment.professional === "Dra. Laura Martínez" ? "1" : 
+                                                                          appointment.professional === "Est. Sofía Rodríguez" ? "2" : "3";
+                document.getElementById('appointmentDate').value = appointment.date;
+                document.getElementById('appointmentTime').value = appointment.time;
+                document.getElementById('appointmentDuration').value = appointment.duration;
+                document.getElementById('appointmentNotes').value = appointment.notes;
+                
+                // Cambiar el título del modal
+                document.querySelector('#newAppointmentModal .modal-title').innerHTML = '<i class="fas fa-edit me-2"></i>Editar Cita';
+                
+                // Mostrar el modal
+                new bootstrap.Modal(document.getElementById('newAppointmentModal')).show();
+            }
+        }
+
+        // Función para cancelar cita
+        function cancelAppointment(id) {
+            if (confirm(`¿Estás seguro que deseas cancelar la cita #${id}?`)) {
+                // En una implementación real, aquí se enviaría una solicitud al servidor
+                console.log(`Cita #${id} cancelada`);
+                alert(`La cita #${id} ha sido cancelada.`);
+                
+                // Actualizar el estado en la interfaz
+                const statusBadge = document.querySelector(`.card.appointment-card:nth-child(${id}) .status-badge`);
+                if (statusBadge) {
+                    statusBadge.className = "badge bg-danger status-badge";
+                    statusBadge.textContent = "Cancelada";
+                }
+            }
+        }
+
+        // Función para confirmar cita
+        function confirmAppointment(id) {
+            // En una implementación real, aquí se enviaría una solicitud al servidor
+            console.log(`Cita #${id} confirmada`);
+            alert(`La cita #${id} ha sido confirmada.`);
+            
+            // Actualizar el estado en la interfaz
+            const statusBadge = document.querySelector(`.card.appointment-card:nth-child(${id}) .status-badge`);
+            if (statusBadge) {
+                statusBadge.className = "badge bg-success status-badge";
+                statusBadge.textContent = "Confirmada";
+            }
+        }
+
+        // Función para enviar recordatorio por WhatsApp
+        function sendWhatsAppReminder(id) {
+            const appointment = appointments[id];
+            if (appointment) {
+                currentReminderAppointment = appointment;
+                
+                // Configurar mensaje predeterminado
+                const defaultMessage = `Hola ${appointment.client.split(' ')[0]}, este es un recordatorio de tu cita en MAOR Centro de Belleza.`;
+                document.getElementById('customMessage').value = defaultMessage;
+                
+                // Mostrar modal de confirmación
+                new bootstrap.Modal(document.getElementById('reminderConfirmationModal')).show();
+            }
+        }
+
+        // Función para confirmar el envío del recordatorio
+        function confirmSendReminder() {
+            if (!currentReminderAppointment) return;
+            
+            const includeDetails = document.getElementById('includeDetails').checked;
+            const customMessage = document.getElementById('customMessage').value;
+            
+            let message = customMessage;
+            
+            if (includeDetails) {
+                message += `\n\n📅 *Detalles de la cita:*` +
+                          `\n🗓 *Fecha:* ${formatDate(currentReminderAppointment.date)}` +
+                          `\n⏰ *Hora:* ${formatTime(currentReminderAppointment.time)}` +
+                          `\n💆 *Servicio:* ${currentReminderAppointment.service}` +
+                          `\n👩‍⚕️ *Profesional:* ${currentReminderAppointment.professional}` +
+                          `\n\n📍 *Ubicación:* Carrera 25 #15-30, Sincelejo` +
+                          `\n📞 *Teléfono:* (605) 287 6543` +
+                          `\n\nGracias por confiar en MAOR Centro de Belleza.`;
+            }
+            
+            // Codificar el mensaje para URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Crear el enlace de WhatsApp
+            const whatsappLink = `https://wa.me/57${currentReminderAppointment.phone}?text=${encodedMessage}`;
+            
+            // Abrir WhatsApp en una nueva pestaña
+            window.open(whatsappLink, '_blank');
+            
+            // Cerrar el modal
+            bootstrap.Modal.getInstance(document.getElementById('reminderConfirmationModal')).hide();
+            
+            // Mostrar confirmación
+            alert(`Recordatorio enviado a ${currentReminderAppointment.client}`);
+        }
+
+        // Función para formatear fecha
+        function formatDate(dateString) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', options);
+        }
+
+        // Función para formatear hora
+        function formatTime(timeString) {
+            const [hours, minutes] = timeString.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
+        }
+
+        // Manejar el envío del formulario de cita
+        document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Aquí iría la lógica para guardar la cita en una implementación real
+            alert('Cita guardada exitosamente');
+            
+            // Cerrar el modal
+            bootstrap.Modal.getInstance(document.getElementById('newAppointmentModal')).hide();
+            
+            // Resetear el formulario
+            this.reset();
+        });
+    </script>
+</body>
+</html>

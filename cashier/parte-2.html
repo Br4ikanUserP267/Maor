@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAOR - Dashboard Cajero</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --maor-primary: #8e44ad;
+            --maor-secondary: #9b59b6;
+            --maor-light: #f5eef8;
+        }
+        .sidebar {
+            background-color: var(--maor-primary);
+            color: white;
+            transition: all 0.3s;
+        }
+        .sidebar-item {
+            transition: all 0.2s;
+            border-radius: 5px;
+        }
+        .sidebar-item:hover {
+            background-color: var(--maor-secondary);
+            transform: translateX(5px);
+        }
+        .sidebar-item.active {
+            background-color: var(--maor-secondary);
+            font-weight: 500;
+        }
+        .client-card {
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        .client-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--maor-primary);
+        }
+        .badge-status {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+        }
+        .procedure-item {
+            border-left: 3px solid var(--maor-primary);
+            padding-left: 15px;
+            margin-bottom: 15px;
+            background-color: var(--maor-light);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .btn-maor {
+            background-color: var(--maor-primary);
+            color: white;
+        }
+        .btn-maor:hover {
+            background-color: var(--maor-secondary);
+            color: white;
+        }
+        .bg-maor-light {
+            background-color: var(--maor-light);
+        }
+        .client-emoji {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        .invoice-item {
+            border-bottom: 1px dashed #ddd;
+            padding: 8px 0;
+        }
+        .service-badge {
+            font-size: 0.7rem;
+            margin-right: 5px;
+        }
+        .product-table th {
+            font-size: 0.8rem;
+        }
+        .client-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-active {
+            background-color: #2ecc71;
+        }
+        .status-waiting {
+            background-color: #f39c12;
+        }
+        .status-completed {
+            background-color: #3498db;
+        }
+        .price-tag {
+            background-color: #f8f9fa;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar vh-100 p-3" style="width: 280px; position: fixed; left: 0; top: 0;">
+            <div class="text-center mb-4 pt-3">
+                <h2><i class="fas fa-spa me-2"></i>MAOR</h2>
+                <p class="small mb-0">Centro de Belleza - Sincelejo</p>
+                <hr class="bg-light">
+                <div class="text-start mt-4">
+                    <h5 class="text-white-50 mb-3"><small>MENÚ CAJERO</small></h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-2">
+                            <a href="dashboard-general.html" class="nav-link text-white sidebar-item  p-2">
+                                <i class="fas fa-users me-2"></i>Clientes
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="./parte-2.html" class="nav-link text-white sidebar-item active p-2">
+                                <i class="fas fa-users me-2"></i>Clientes en Local
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="./gestioncitas.html" class="nav-link text-white sidebar-item  p-2">
+                                <i class="fas fa-calendar-alt me-2"></i>Gestión de Citas
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="position-absolute bottom-0 start-0 p-3 w-100">
+                <div class="d-flex align-items-center p-2" style="background-color: rgba(0,0,0,0.2); border-radius: 5px;">
+                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Usuario">
+                    <div>
+                        <small class="d-block">Usuario Cajero</small>
+                        <small class="text-white-50">Cajero Principal</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido principal - Clientes en el local primero -->
+        <div class="flex-grow-1 p-4" style="margin-left: 280px;">
+            <!-- Sección de Clientes en el Local -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-users me-2"></i>Clientes en el Local</h4>
+                        <div>
+                            <span class="badge bg-primary me-2">3 clientes activos</span>
+                            <button class="btn btn-sm btn-maor" data-bs-toggle="modal" data-bs-target="#checkInModal">
+                                <i class="fas fa-user-plus me-1"></i>Registrar Ingreso
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Cliente 1 - En tratamiento -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card client-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="client-emoji">👩</span>
+                                        <div>
+                                            <h5 class="mb-0">María González</h5>
+                                            <small class="text-muted">
+                                                <span class="client-status status-active"></span>
+                                                En tratamiento
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="mb-2"><i class="fas fa-spa me-1"></i>Servicios</h6>
+                                        <div class="procedure-item">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <strong>Tratamiento Facial Premium</strong>
+                                                    <div class="mt-1">
+                                                        <span class="price-tag">$180,000</span>
+                                                    </div>
+                                                </div>
+                                                <span class="badge bg-primary service-badge">En curso</span>
+                                            </div>
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="fas fa-user-md me-1"></i>Dra. Martínez
+                                                <span class="mx-2">|</span>
+                                                <i class="fas fa-clock me-1"></i>45 min
+                                            </small>
+                                            <div class="progress mt-2" style="height: 8px;">
+                                                <div class="progress-bar bg-primary" style="width: 65%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="mb-2"><i class="fas fa-box-open me-1"></i>Productos Usados</h6>
+                                        <ul class="list-group list-group-flush small">
+                                            <li class="list-group-item px-0 py-1 d-flex justify-content-between">
+                                                <span>Crema Hidratante Premium</span>
+                                                <span>1 unidad</span>
+                                            </li>
+                                            <li class="list-group-item px-0 py-1 d-flex justify-content-between">
+                                                <span>Serum Revitalizante</span>
+                                                <span>1 unidad</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between mt-3">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="addServiceToClient('1')">
+                                            <i class="fas fa-plus me-1"></i>Servicio
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="addProductToClient('1')">
+                                            <i class="fas fa-cube me-1"></i>Producto
+                                        </button>
+                                        <button class="btn btn-sm btn-maor" onclick="generateInvoice('1', true)">
+                                            <i class="fas fa-file-invoice me-1"></i>Facturar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cliente 2 - En espera -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card client-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="client-emoji">👨</span>
+                                        <div>
+                                            <h5 class="mb-0">Carlos Ramírez</h5>
+                                            <small class="text-muted">
+                                                <span class="client-status status-waiting"></span>
+                                                En espera
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="mb-2"><i class="fas fa-spa me-1"></i>Servicios</h6>
+                                        <div class="procedure-item">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <strong>Depilación Láser</strong>
+                                                    <div class="mt-1">
+                                                        <span class="price-tag">$250,000</span>
+                                                    </div>
+                                                </div>
+                                                <span class="badge bg-warning text-dark service-badge">Pendiente</span>
+                                            </div>
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="fas fa-user-md me-1"></i>Dra. Martínez
+                                                <span class="mx-2">|</span>
+                                                <i class="fas fa-clock me-1"></i>30 min
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="mb-2"><i class="fas fa-box-open me-1"></i>Productos Usados</h6>
+                                        <div class="text-muted small">No se han registrado productos</div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between mt-3">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="addServiceToClient('2')">
+                                            <i class="fas fa-plus me-1"></i>Servicio
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="addProductToClient('2')">
+                                            <i class="fas fa-cube me-1"></i>Producto
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" disabled>
+                                            <i class="fas fa-file-invoice me-1"></i>Facturar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cliente 3 - En espera -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card client-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="client-emoji">👩</span>
+                                        <div>
+                                            <h5 class="mb-0">Ana López</h5>
+                                            <small class="text-muted">
+                                                <span class="client-status status-waiting"></span>
+                                                En espera
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="mb-2"><i class="fas fa-spa me-1"></i>Servicios</h6>
+                                        <div class="procedure-item">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <strong>Manicura Semipermanente</strong>
+                                                    <div class="mt-1">
+                                                        <span class="price-tag">$80,000</span>
+                                                    </div>
+                                                </div>
+                                                <span class="badge bg-warning text-dark service-badge">Pendiente</span>
+                                            </div>
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="fas fa-user-md me-1"></i>Est. Rodríguez
+                                                <span class="mx-2">|</span>
+                                                <i class="fas fa-clock me-1"></i>45 min
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="mb-2"><i class="fas fa-box-open me-1"></i>Productos Usados</h6>
+                                        <div class="text-muted small">No se han registrado productos</div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between mt-3">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="addServiceToClient('3')">
+                                            <i class="fas fa-plus me-1"></i>Servicio
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="addProductToClient('3')">
+                                            <i class="fas fa-cube me-1"></i>Producto
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" disabled>
+                                            <i class="fas fa-file-invoice me-1"></i>Facturar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para registrar ingreso de cliente -->
+    <div class="modal fade" id="checkInModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background-color: var(--maor-primary);">
+                    <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Registrar Ingreso de Cliente</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="checkInForm">
+                        <div class="mb-3">
+                            <label for="checkInClient" class="form-label">Seleccionar Cliente</label>
+                            <select class="form-select" id="checkInClient" required>
+                                <option value="">Buscar cliente...</option>
+                                <option value="1">María González (CC 123456789)</option>
+                                <option value="2">Carlos Ramírez (CC 456789123)</option>
+                                <option value="3">Ana López (CC 987654321)</option>
+                                <option value="4">Luisa Fernández (CC 789123456)</option>
+                                <option value="5">Patricia Gómez (CC 321654987)</option>
+                                <option value="new">+ Registrar nuevo cliente</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="checkInService" class="form-label">Servicio Principal</label>
+                            <select class="form-select" id="checkInService" required>
+                                <option value="">Seleccionar servicio...</option>
+                                <option value="facial" data-price="180000">Tratamiento Facial ($180,000)</option>
+                                <option value="corporal" data-price="150000">Tratamiento Corporal ($150,000)</option>
+                                <option value="depilacion" data-price="250000">Depilación Láser ($250,000)</option>
+                                <option value="masaje" data-price="120000">Masaje Relajante ($120,000)</option>
+                                <option value="manicura" data-price="80000">Manicura/Pedicura ($80,000)</option>
+                                <option value="maquillaje" data-price="90000">Maquillaje Profesional ($90,000)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="checkInProfessional" class="form-label">Profesional Asignado</label>
+                            <select class="form-select" id="checkInProfessional" required>
+                                <option value="">Seleccionar profesional...</option>
+                                <option value="1">Dra. Laura Martínez</option>
+                                <option value="2">Est. Sofía Rodríguez</option>
+                                <option value="3">Lic. Carolina Gómez</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn text-white" style="background-color: var(--maor-primary);">
+                                <i class="fas fa-check-circle me-2"></i>Registrar Ingreso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar servicio -->
+    <div class="modal fade" id="addServiceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background-color: var(--maor-primary);">
+                    <h5 class="modal-title"><i class="fas fa-spa me-2"></i>Agregar Servicio</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="serviceForm">
+                        <input type="hidden" id="serviceClientId">
+                        <div class="mb-3">
+                            <label for="serviceType" class="form-label">Tipo de Servicio</label>
+                            <select class="form-select" id="serviceType" required>
+                                <option value="">Seleccionar servicio...</option>
+                                <option value="facial" data-price="180000">Tratamiento Facial ($180,000)</option>
+                                <option value="corporal" data-price="150000">Tratamiento Corporal ($150,000)</option>
+                                <option value="depilacion" data-price="250000">Depilación Láser ($250,000)</option>
+                                <option value="masaje" data-price="120000">Masaje Relajante ($120,000)</option>
+                                <option value="manicura" data-price="80000">Manicura/Pedicura ($80,000)</option>
+                                <option value="maquillaje" data-price="90000">Maquillaje Profesional ($90,000)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="serviceProfessional" class="form-label">Profesional</label>
+                            <select class="form-select" id="serviceProfessional" required>
+                                <option value="">Seleccionar profesional...</option>
+                                <option value="1">Dra. Laura Martínez</option>
+                                <option value="2">Est. Sofía Rodríguez</option>
+                                <option value="3">Lic. Carolina Gómez</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="serviceDuration" class="form-label">Duración (minutos)</label>
+                            <input type="number" class="form-control" id="serviceDuration" value="30" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="serviceNotes" class="form-label">Notas</label>
+                            <textarea class="form-control" id="serviceNotes" rows="3"></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn text-white" style="background-color: var(--maor-primary);">
+                                <i class="fas fa-save me-2"></i>Guardar Servicio
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar producto -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background-color: var(--maor-primary);">
+                    <h5 class="modal-title"><i class="fas fa-cube me-2"></i>Agregar Producto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productForm">
+                        <input type="hidden" id="productClientId">
+                        <div class="mb-3">
+                            <label for="productSelect" class="form-label">Producto</label>
+                            <select class="form-select" id="productSelect" required>
+                                <option value="">Seleccionar producto...</option>
+                                <option value="1">Crema Hidratante Premium</option>
+                                <option value="2">Serum Revitalizante</option>
+                                <option value="3">Mascarilla Purificante</option>
+                                <option value="4">Aceite Esencial de Rosa</option>
+                                <option value="5">Esmalte Semipermanente</option>
+                                <option value="6">Kit Maquillaje Profesional</option>
+                                <option value="7">Protector Solar FPS 50</option>
+                                <option value="8">Shampoo Reconstructor</option>
+                                <option value="9">Acondicionador Keratina</option>
+                                <option value="10">Perfume Floral</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productQuantity" class="form-label">Cantidad</label>
+                            <input type="number" class="form-control" id="productQuantity" value="1" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productNotes" class="form-label">Notas</label>
+                            <textarea class="form-control" id="productNotes" rows="2"></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn text-white" style="background-color: var(--maor-primary);">
+                                <i class="fas fa-save me-2"></i>Agregar Producto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de factura -->
+    <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background-color: var(--maor-primary);">
+                    <h5 class="modal-title"><i class="fas fa-file-invoice me-2"></i>Factura MAOR</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="invoiceContent">
+                    <!-- Contenido de la factura se genera aquí -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-maor" onclick="downloadPDF()">
+                        <i class="fas fa-file-pdf me-2"></i>Descargar PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        // Función para agregar servicio a cliente
+        function addServiceToClient(clientId) {
+            document.getElementById('serviceClientId').value = clientId;
+            new bootstrap.Modal(document.getElementById('addServiceModal')).show();
+        }
+        
+        // Función para agregar producto a cliente
+        function addProductToClient(clientId) {
+            document.getElementById('productClientId').value = clientId;
+            new bootstrap.Modal(document.getElementById('addProductModal')).show();
+        }
+        
+        // Función para generar factura
+        function generateInvoice(clientId, isInLocal = false) {
+            // Precios fijos de los servicios
+            const servicePrices = {
+                'facial': 180000,
+                'corporal': 150000,
+                'depilacion': 250000,
+                'masaje': 120000,
+                'manicura': 80000,
+                'maquillaje': 90000
+            };
+            
+            // Precios fijos de los productos
+            const productPrices = {
+                '1': 85000,  // Crema Hidratante Premium
+                '2': 120000, // Serum Revitalizante
+                '3': 65000,  // Mascarilla Purificante
+                '4': 95000,  // Aceite Esencial de Rosa
+                '5': 45000,  // Esmalte Semipermanente
+                '6': 180000, // Kit Maquillaje Profesional
+                '7': 75000,  // Protector Solar FPS 50
+                '8': 55000,  // Shampoo Reconstructor
+                '9': 60000,  // Acondicionador Keratina
+                '10': 130000 // Perfume Floral
+            };
+            
+            // Datos de ejemplo para diferentes clientes
+            const invoiceData = {
+                '1': {
+                    name: 'María González',
+                    doc: '123456789',
+                    phone: '3001234567',
+                    email: 'maria@example.com',
+                    professional: 'Dra. Laura Martínez',
+                    serviceDate: new Date().toLocaleDateString('es-ES'),
+                    serviceTime: isInLocal ? '09:00 AM' : '10:30 AM',
+                    services: [
+                        { description: 'Tratamiento Facial Premium', type: 'facial', qty: 1 }
+                    ],
+                    products: [
+                        { description: 'Crema Hidratante Premium', id: '1', qty: 1 },
+                        { description: 'Serum Revitalizante', id: '2', qty: 1 }
+                    ]
+                },
+                '2': {
+                    name: 'Carlos Ramírez',
+                    doc: '456789123',
+                    phone: '3204567891',
+                    email: 'carlos@example.com',
+                    professional: 'Dra. Laura Martínez',
+                    serviceDate: new Date().toLocaleDateString('es-ES'),
+                    serviceTime: isInLocal ? '10:30 AM' : '11:15 AM',
+                    services: [
+                        { description: 'Depilación Láser Facial', type: 'depilacion', qty: 1 }
+                    ],
+                    products: [
+                        { description: 'Gel de protección', id: '7', qty: 1 }
+                    ]
+                },
+                '3': {
+                    name: 'Ana López',
+                    doc: '987654321',
+                    phone: '3109876543',
+                    email: 'ana@example.com',
+                    professional: 'Est. Sofía Rodríguez',
+                    serviceDate: new Date().toLocaleDateString('es-ES'),
+                    serviceTime: isInLocal ? '11:15 AM' : '02:00 PM',
+                    services: [
+                        { description: 'Manicura Semipermanente', type: 'manicura', qty: 1 }
+                    ],
+                    products: [
+                        { description: 'Esmalte Semipermanente', id: '5', qty: 1 },
+                        { description: 'Crema para Cutículas', id: '8', qty: 1 }
+                    ]
+                }
+            };
+
+            const clientData = invoiceData[clientId] || invoiceData['1'];
+            
+            // Generar número de factura aleatorio
+            const randomNum = Math.floor(Math.random() * 9000) + 1000;
+            const invoiceNumber = `001-001-${randomNum}`;
+            
+            // Calcular subtotal, IVA y total
+            let servicesSubtotal = 0;
+            clientData.services.forEach(item => {
+                servicesSubtotal += servicePrices[item.type] * item.qty;
+            });
+            
+            let productsSubtotal = 0;
+            clientData.products.forEach(item => {
+                productsSubtotal += productPrices[item.id] * item.qty;
+            });
+            
+            const subtotal = servicesSubtotal + productsSubtotal;
+            const iva = productsSubtotal * 0.19; // Solo productos llevan IVA
+            const total = subtotal + iva;
+            
+            // Generar HTML de la factura
+            const invoiceHTML = `
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <img src="https://via.placeholder.com/200x80?text=MAOR+Logo" alt="MAOR Logo" class="img-fluid mb-2">
+                        <p class="mb-1"><strong>MAOR Centro de Belleza Integral</strong></p>
+                        <p class="mb-1">Carrera 25 #15-30, Sincelejo - Sucre</p>
+                        <p class="mb-1">Tel: (605) 287 6543</p>
+                        <p class="mb-0">NIT: 901.234.567-8</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <h4>FACTURA #${invoiceNumber}</h4>
+                        <p class="mb-1"><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}</p>
+                        <p class="mb-1"><strong>Hora:</strong> ${new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'})}</p>
+                        <p class="mb-0"><strong>Cajero:</strong> Usuario Cajero</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Datos del Cliente</h5>
+                        <p class="mb-1"><strong>Nombre:</strong> ${clientData.name}</p>
+                        <p class="mb-1"><strong>Documento:</strong> ${clientData.doc}</p>
+                        <p class="mb-1"><strong>Teléfono:</strong> ${clientData.phone}</p>
+                        <p class="mb-0"><strong>Correo:</strong> ${clientData.email}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Detalle del Servicio</h5>
+                        <p class="mb-1"><strong>Profesional:</strong> ${clientData.professional}</p>
+                        <p class="mb-1"><strong>Fecha servicio:</strong> ${clientData.serviceDate}</p>
+                        <p class="mb-0"><strong>Hora servicio:</strong> ${clientData.serviceTime}</p>
+                    </div>
+                </div>
+                
+                <h5 class="mb-3"><i class="fas fa-spa me-2"></i>Servicios</h5>
+                <div class="table-responsive mb-4">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Descripción</th>
+                                <th width="100" class="text-end">Cantidad</th>
+                                <th width="120" class="text-end">Precio Unitario</th>
+                                <th width="120" class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${clientData.services.map((item, index) => {
+                                const price = servicePrices[item.type];
+                                return `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${item.description}</td>
+                                    <td class="text-end">${item.qty}</td>
+                                    <td class="text-end">$${price.toLocaleString('es-CO')}</td>
+                                    <td class="text-end">$${(price * item.qty).toLocaleString('es-CO')}</td>
+                                </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h5 class="mb-3"><i class="fas fa-box-open me-2"></i>Productos</h5>
+                <div class="table-responsive mb-4">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Descripción</th>
+                                <th width="100" class="text-end">Cantidad</th>
+                                <th width="120" class="text-end">Precio Unitario</th>
+                                <th width="120" class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${clientData.products.map((item, index) => {
+                                const price = productPrices[item.id];
+                                return `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${item.description}</td>
+                                    <td class="text-end">${item.qty}</td>
+                                    <td class="text-end">$${price.toLocaleString('es-CO')}</td>
+                                    <td class="text-end">$${(price * item.qty).toLocaleString('es-CO')}</td>
+                                </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Subtotal Servicios:</strong></td>
+                                <td class="text-end">$${servicesSubtotal.toLocaleString('es-CO')}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Subtotal Productos:</strong></td>
+                                <td class="text-end">$${productsSubtotal.toLocaleString('es-CO')}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>IVA (19% sobre productos):</strong></td>
+                                <td class="text-end">$${iva.toLocaleString('es-CO')}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                <td class="text-end"><h5 class="mb-0">$${total.toLocaleString('es-CO')}</h5></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> Gracias por su preferencia. Presente esta factura para reclamar garantías de los productos.
+                </div>
+                
+                <div class="text-center mt-4">
+                    <p class="mb-1">MAOR Centro de Belleza Integral - Sincelejo</p>
+                    <p class="mb-1">Horario: Lunes a Sábado 8:00 AM - 7:00 PM</p>
+                    <p class="mb-0">¡Vuelva pronto!</p>
+                </div>
+            `;
+            
+            // Actualizar contenido del modal
+            document.getElementById('invoiceContent').innerHTML = invoiceHTML;
+            
+            // Guardar datos para PDF
+            document.getElementById('invoiceContent').dataset.invoiceNumber = invoiceNumber;
+            
+            // Mostrar modal de factura
+            new bootstrap.Modal(document.getElementById('invoiceModal')).show();
+        }
+        
+        // Función para descargar PDF
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Obtener el elemento HTML que contiene la factura
+            const element = document.getElementById('invoiceContent');
+            const invoiceNumber = element.dataset.invoiceNumber;
+            
+            // Usar html2canvas para capturar el elemento como imagen
+            html2canvas(element).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 295; // A4 height in mm
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                
+                let position = 0;
+                doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // Si la factura es muy larga, agregar páginas adicionales
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    doc.addPage();
+                    doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // Guardar el PDF
+                doc.save(`Factura_MAOR_${invoiceNumber}.pdf`);
+            });
+        }
+    </script>
+</body>
+</html>

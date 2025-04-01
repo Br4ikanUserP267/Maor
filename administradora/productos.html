@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAOR - Gestión de Productos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --maor-primary: #8e44ad;
+            --maor-secondary: #9b59b6;
+            --maor-light: #f5eef8;
+        }
+        .sidebar {
+            background-color: var(--maor-primary);
+            color: white;
+        }
+        .sidebar-item.active {
+            background-color: var(--maor-secondary);
+            border-radius: 5px;
+        }
+        .btn-maor {
+            background-color: var(--maor-primary);
+            color: white;
+        }
+        .btn-maor:hover {
+            background-color: var(--maor-secondary);
+        }
+        .product-card {
+            border-left: 4px solid var(--maor-primary);
+            transition: transform 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+        }
+        .admin-panel {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .stock-low {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .stock-medium {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .stock-high {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .expired {
+            background-color: #ffe6e6;
+        }
+        .expiring-soon {
+            background-color: #fff3cd;
+        }
+        .expired-badge {
+            background-color: #dc3545;
+            color: white;
+        }
+        .expiring-soon-badge {
+            background-color: #ffc107;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar vh-100 p-3" style="width: 280px; position: fixed; left: 0; top: 0;">
+            <div class="text-center mb-4 pt-3">
+                <h2><i class="fas fa-spa me-2"></i>MAOR</h2>
+                <p class="small mb-0">Centro de Belleza - Sincelejo</p>
+                <hr class="bg-light">
+                <div class="text-start mt-4">
+                    <h5 class="text-white-50 mb-3"><small>MENÚ ADMINISTRADORA</small></h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-2">
+                            <a href="#" class="nav-link text-white sidebar-item p-2">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="#" class="nav-link text-white sidebar-item p-2">
+                                <i class="fas fa-users me-2"></i>Clientes
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="#" class="nav-link text-white sidebar-item p-2">
+                                <i class="fas fa-calendar-alt me-2"></i>Citas
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="#" class="nav-link text-white sidebar-item p-2">
+                                <i class="fas fa-concierge-bell me-2"></i>Servicios
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="#" class="nav-link text-white sidebar-item active p-2">
+                                <i class="fas fa-box-open me-2"></i>Productos
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="#" class="nav-link text-white sidebar-item p-2">
+                                <i class="fas fa-user-tie me-2"></i>Empleados
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="#" class="nav-link text-white sidebar-item p-2">
+                                <i class="fas fa-file-invoice-dollar me-2"></i>Ventas
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="#" class="nav-link text-white sidebar-item p-2">
+                                <i class="fas fa-chart-bar me-2"></i>Reportes
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="#" class="nav-link text-white sidebar-item p-2">
+                                <i class="fas fa-exclamation-circle me-2"></i>PQRF
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="flex-grow-1 p-4" style="margin-left: 280px;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-box-open me-2"></i>Gestión de Productos</h2>
+                <div>
+                    <button class="btn btn-maor me-2" onclick="downloadProductReport()">
+                        <i class="fas fa-file-excel me-2"></i>Exportar a Excel
+                    </button>
+                    <button class="btn btn-maor" data-bs-toggle="modal" data-bs-target="#newProductModal">
+                        <i class="fas fa-plus-circle me-2"></i>Añadir Producto
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel de control administrativo -->
+            <div class="admin-panel mb-4">
+                <div class="row">
+                    <div class="col-md-2 mb-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h3 class="mb-0">42</h3>
+                                <p class="mb-0 text-muted">Productos totales</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h3 class="mb-0">8</h3>
+                                <p class="mb-0 text-muted">Bajo stock</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h3 class="mb-0">3</h3>
+                                <p class="mb-0 text-muted">Vencidos</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h3 class="mb-0">5</h3>
+                                <p class="mb-0 text-muted">Por vencer</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h3 class="mb-0">$12,850K</h3>
+                                <p class="mb-0 text-muted">Valor inventario</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h3 class="mb-0">15</h3>
+                                <p class="mb-0 text-muted">Categorías</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros y búsqueda -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Categoría</label>
+                            <select class="form-select">
+                                <option>Todas las categorías</option>
+                                <option>Cuidado Facial</option>
+                                <option>Maquillaje</option>
+                                <option>Tratamientos Capilares</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Estado de stock</label>
+                            <select class="form-select">
+                                <option>Todos los productos</option>
+                                <option>Stock bajo</option>
+                                <option>Stock medio</option>
+                                <option>Stock alto</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Estado de vencimiento</label>
+                            <select class="form-select" id="expirationFilter">
+                                <option value="all">Todos</option>
+                                <option value="expired">Vencidos</option>
+                                <option value="expiring">Por vencer (15 días)</option>
+                                <option value="valid">Vigentes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Buscar producto</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Nombre, código...">
+                                <button class="btn btn-outline-secondary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listado de productos -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Inventario de Productos</h4>
+                    <div>
+                        <div class="form-check form-switch d-inline-block me-3">
+                            <input class="form-check-input" type="checkbox" id="showLowStock">
+                            <label class="form-check-label" for="showLowStock">Bajo stock</label>
+                        </div>
+                        <div class="form-check form-switch d-inline-block">
+                            <input class="form-check-input" type="checkbox" id="showExpiring">
+                            <label class="form-check-label" for="showExpiring">Por vencer</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Vencimiento</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="expired">
+                                    <td>PROD-001</td>
+                                    <td>Crema Hidratante Premium</td>
+                                    <td>Cuidado Facial</td>
+                                    <td>$85,000</td>
+                                    <td>24</td>
+                                    <td>15/05/2023</td>
+                                    <td>
+                                        <span class="badge expired-badge">Vencido</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary me-1">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="expiring-soon">
+                                    <td>PROD-042</td>
+                                    <td>Shampoo Reconstrucción Capilar</td>
+                                    <td>Tratamientos Capilares</td>
+                                    <td>$62,000</td>
+                                    <td>3</td>
+                                    <td>30/06/2023</td>
+                                    <td>
+                                        <span class="badge expiring-soon-badge">Por vencer</span>
+                                        <span class="stock-low">Stock bajo</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary me-1">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>PROD-015</td>
+                                    <td>Base Líquida Maquillaje</td>
+                                    <td>Maquillaje</td>
+                                    <td>$120,000</td>
+                                    <td>7</td>
+                                    <td>15/08/2023</td>
+                                    <td>
+                                        <span class="stock-medium">Stock medio</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary me-1">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>PROD-078</td>
+                                    <td>Mascarilla Facial de Oro</td>
+                                    <td>Cuidado Facial</td>
+                                    <td>$150,000</td>
+                                    <td>12</td>
+                                    <td>10/12/2023</td>
+                                    <td>
+                                        <span class="stock-high">Disponible</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary me-1">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Paginación -->
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mt-4">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Anterior</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Siguiente</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para nuevo producto -->
+    <div class="modal fade" id="newProductModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background-color: var(--maor-primary);">
+                    <h5 class="modal-title"><i class="fas fa-box-open me-2"></i>Añadir Nuevo Producto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre del Producto*</label>
+                                <input type="text" class="form-control" placeholder="Ej: Crema Hidratante Premium" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Código de Producto</label>
+                                <input type="text" class="form-control" placeholder="Se generará automáticamente" readonly>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Categoría*</label>
+                                <select class="form-select" required>
+                                    <option value="">Seleccionar categoría...</option>
+                                    <option>Cuidado Facial</option>
+                                    <option>Maquillaje</option>
+                                    <option>Tratamientos Capilares</option>
+                                    <option>Productos Corporales</option>
+                                    <option>Otros</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Proveedor</label>
+                                <input type="text" class="form-control" placeholder="Nombre del proveedor">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Precio de Compra*</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Precio de Venta*</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Cantidad en Stock*</label>
+                                <input type="number" class="form-control" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha Vencimiento*</label>
+                                <input type="date" class="form-control" id="expirationDate" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Alerta de Stock Mínimo</label>
+                                <input type="number" class="form-control" placeholder="Cantidad para alerta de stock bajo">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Días alerta vencimiento</label>
+                                <input type="number" class="form-control" value="15" placeholder="Días previos para alerta">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Imagen del Producto</label>
+                                <input type="file" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" rows="3" placeholder="Descripción detallada del producto"></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-maor">Guardar Producto</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+    
+    <script>
+        // Función para descargar reporte de productos en Excel
+        function downloadProductReport() {
+            // Datos de ejemplo
+            const data = [
+                ["Código", "Producto", "Categoría", "Precio Compra", "Precio Venta", "Stock", "Vencimiento", "Estado", "Proveedor"],
+                ["PROD-001", "Crema Hidratante Premium", "Cuidado Facial", 45000, 85000, 24, "15/05/2023", "Vencido", "Belleza Colombia"],
+                ["PROD-042", "Shampoo Reconstrucción Capilar", "Tratamientos Capilares", 32000, 62000, 3, "30/06/2023", "Por vencer", "Peluquería Profesional"],
+                ["PROD-015", "Base Líquida Maquillaje", "Maquillaje", 65000, 120000, 7, "15/08/2023", "Vigente", "Makeup International"],
+                ["PROD-078", "Mascarilla Facial de Oro", "Cuidado Facial", 75000, 150000, 12, "10/12/2023", "Vigente", "Luxury Beauty"]
+            ];
+            
+            // Crear libro de Excel
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte_Productos");
+            
+            // Descargar archivo
+            XLSX.writeFile(wb, `Reporte_Productos_MAOR_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        // Función para verificar estado de vencimiento
+        function checkExpirationStatus(dateString) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const expirationDate = new Date(dateString);
+            const timeDiff = expirationDate.getTime() - today.getTime();
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            
+            if (daysDiff < 0) {
+                return 'expired';
+            } else if (daysDiff <= 15) {
+                return 'expiring';
+            } else {
+                return 'valid';
+            }
+        }
+
+        // Inicializar tooltips y funcionalidades
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Mostrar/ocultar solo productos con bajo stock
+            document.getElementById('showLowStock').addEventListener('change', function() {
+                filterProducts();
+            });
+            
+            // Mostrar/ocultar solo productos por vencer
+            document.getElementById('showExpiring').addEventListener('change', function() {
+                filterProducts();
+            });
+            
+            // Filtrar por estado de vencimiento
+            document.getElementById('expirationFilter').addEventListener('change', function() {
+                filterProducts();
+            });
+            
+            // Función para filtrar productos
+            function filterProducts() {
+                const showLowStock = document.getElementById('showLowStock').checked;
+                const showExpiring = document.getElementById('showExpiring').checked;
+                const expirationFilter = document.getElementById('expirationFilter').value;
+                
+                const rows = document.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    let shouldShow = true;
+                    
+                    // Filtrar por stock bajo
+                    if (showLowStock) {
+                        const stockCell = row.querySelector('td:nth-child(5)');
+                        if (stockCell) {
+                            const stock = parseInt(stockCell.textContent);
+                            if (stock > 5) { // Consideramos bajo stock menos de 5 unidades
+                                shouldShow = false;
+                            }
+                        }
+                    }
+                    
+                    // Filtrar por productos por vencer
+                    if (showExpiring) {
+                        const dateCell = row.querySelector('td:nth-child(6)');
+                        if (dateCell) {
+                            const status = checkExpirationStatus(formatDate(dateCell.textContent));
+                            if (status !== 'expiring') {
+                                shouldShow = false;
+                            }
+                        }
+                    }
+                    
+                    // Filtrar por selección de vencimiento
+                    if (expirationFilter !== 'all') {
+                        const dateCell = row.querySelector('td:nth-child(6)');
+                        if (dateCell) {
+                            const status = checkExpirationStatus(formatDate(dateCell.textContent));
+                            if (status !== expirationFilter) {
+                                shouldShow = false;
+                            }
+                        }
+                    }
+                    
+                    row.style.display = shouldShow ? '' : 'none';
+                });
+            }
+            
+            // Función para formatear fecha de DD/MM/YYYY a YYYY-MM-DD
+            function formatDate(dateString) {
+                const parts = dateString.split('/');
+                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            
+            // Validar fecha de vencimiento al enviar el formulario
+            document.getElementById('productForm').addEventListener('submit', function(e) {
+                const expirationDate = new Date(document.getElementById('expirationDate').value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (expirationDate < today) {
+                    e.preventDefault();
+                    alert('La fecha de vencimiento no puede ser anterior a la fecha actual');
+                    document.getElementById('expirationDate').focus();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

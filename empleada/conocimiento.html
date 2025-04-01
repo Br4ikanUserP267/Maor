@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAOR - Empleado</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <style>
+        :root {
+            --correjir-primary: #8e44ad;
+            --correjir-secondary: #9b59b6;
+            --correjir-light: #f5eef8;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            width: 250px;
+            height: 100%;
+            position: fixed;
+            left: -250px;
+            top: 0;
+            background-color: var(--correjir-primary);
+            color: white;
+            transition: all 0.3s;
+            z-index: 1050;
+        }
+        .sidebar.active {
+            left: 0;
+        }
+        .sidebar-header {
+            padding: 20px;
+            background-color: rgba(0,0,0,0.2);
+        }
+        .sidebar-menu {
+            padding: 0;
+            list-style: none;
+        }
+        .sidebar-menu li a {
+            color: white;
+            padding: 12px 20px;
+            display: block;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .sidebar-menu li a:hover {
+            background-color: var(--correjir-secondary);
+            padding-left: 25px;
+        }
+        .sidebar-menu li a i {
+            margin-right: 10px;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1040;
+            display: none;
+        }
+        .overlay.active {
+            display: block;
+        }
+        .navbar-top {
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .main-content {
+            padding-bottom: 20px;
+        }
+        .menu-toggle {
+            border: none;
+            background: none;
+            font-size: 1.5rem;
+            color: var(--correjir-primary);
+        }
+        .card-service {
+            border-left: 4px solid var(--correjir-primary);
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        .card-service:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .badge-status {
+            font-size: 0.75rem;
+        }
+        .btn-correjir {
+            background-color: var(--correjir-primary);
+            color: white;
+        }
+        .btn-correjir:hover {
+            background-color: var(--correjir-secondary);
+            color: white;
+        }
+        .date-selector {
+            background-color: white;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .stats-card {
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            padding: 15px 0;
+        }
+        .service-badge {
+            background-color: var(--correjir-light);
+            color: var(--correjir-primary);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+        .fc .fc-toolbar-title {
+            font-size: 1.2rem;
+        }
+        .fc .fc-button {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+        }
+        .fc-event {
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 2px 4px;
+        }
+        .fc-daygrid-event-dot {
+            border-color: white !important;
+        }
+        .fc-event-title {
+            white-space: normal !important;
+        }
+        .knowledge-card {
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .knowledge-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .knowledge-icon {
+            font-size: 2rem;
+            color: var(--correjir-primary);
+        }
+        .file-preview {
+            max-height: 200px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .file-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h5>MAOR</h5>
+            <small>Panel de empleado</small>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
+            <li><a href="#"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
+            <li><a href="#"><i class="fas fa-users"></i> Clientes</a></li>
+            <li><a href="#"><i class="fas fa-chart-line"></i> Reportes</a></li>
+            <li><a href="#" class="active"><i class="fas fa-book"></i> Conocimiento</a></li>
+            <li><a href="#"><i class="fas fa-cog"></i> Configuración</a></li>
+        </ul>
+    </div>
+    <div class="overlay"></div>
+   
+    <!-- Encabezado -->
+    <nav class="navbar navbar-top sticky-top bg-white shadow-sm">
+        <div class="container-fluid">
+            <button class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="d-flex align-items-center">
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Perfil</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container-fluid main-content">
+        <!-- Pestañas -->
+        <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="lista-tab" data-bs-toggle="tab" data-bs-target="#lista" type="button" role="tab" aria-controls="lista" aria-selected="false">
+                    <i class="fas fa-list me-1"></i> Lista
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="calendario-tab" data-bs-toggle="tab" data-bs-target="#calendario" type="button" role="tab" aria-controls="calendario" aria-selected="false">
+                    <i class="fas fa-calendar-alt me-1"></i> Calendario
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reportes-tab" data-bs-toggle="tab" data-bs-target="#reportes" type="button" role="tab" aria-controls="reportes" aria-selected="false">
+                    <i class="fas fa-chart-pie me-1"></i> Reportes
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="conocimiento-tab" data-bs-toggle="tab" data-bs-target="#conocimiento" type="button" role="tab" aria-controls="conocimiento" aria-selected="true">
+                    <i class="fas fa-book me-1"></i> Conocimiento
+                </button>
+            </li>
+        </ul>
+
+        <!-- Contenido de pestañas -->
+        <div class="tab-content" id="myTabContent">
+            <!-- Pestaña de Lista -->
+            <div class="tab-pane fade" id="lista" role="tabpanel" aria-labelledby="lista-tab">
+                <!-- Contenido existente de lista... -->
+            </div>
+
+            <!-- Pestaña de Calendario -->
+            <div class="tab-pane fade" id="calendario" role="tabpanel" aria-labelledby="calendario-tab">
+                <!-- Contenido existente de calendario... -->
+            </div>
+
+            <!-- Pestaña de Reportes -->
+            <div class="tab-pane fade" id="reportes" role="tabpanel" aria-labelledby="reportes-tab">
+                <!-- Contenido existente de reportes... -->
+            </div>
+
+            <!-- Pestaña de Gestión de Conocimiento -->
+            <div class="tab-pane fade show active" id="conocimiento" role="tabpanel" aria-labelledby="conocimiento-tab">
+                <!-- Botón para agregar nuevo conocimiento -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5><i class="fas fa-book me-2"></i>Base de Conocimiento</h5>
+                    <button class="btn btn-correjir" data-bs-toggle="modal" data-bs-target="#addKnowledgeModal">
+                        <i class="fas fa-plus me-2"></i>Agregar Recurso
+                    </button>
+                </div>
+
+                <!-- Filtros -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label for="searchKnowledge" class="form-label">Buscar</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="searchKnowledge" placeholder="Buscar por título o descripción">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="filterType" class="form-label">Filtrar por tipo</label>
+                                <select class="form-select" id="filterType">
+                                    <option value="all">Todos los tipos</option>
+                                    <option value="video">Videos</option>
+                                    <option value="document">Documentos</option>
+                                    <option value="image">Imágenes</option>
+                                    <option value="link">Enlaces</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de recursos de conocimiento -->
+                <div class="row">
+                    <!-- Recurso 1 - Video -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card knowledge-card h-100">
+                            <div class="position-relative">
+                                <img src="https://via.placeholder.com/300x200?text=Video+Thumbnail" class="card-img-top file-preview" alt="Video">
+                                <span class="file-badge"><i class="fas fa-play"></i></span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Técnicas avanzadas de masaje</h5>
+                                <p class="card-text text-muted">Video tutorial que muestra las técnicas más efectivas para masajes relajantes.</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted"><i class="far fa-calendar-alt me-1"></i> 15 Jun 2023</small>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary me-1">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recurso 2 - Documento -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card knowledge-card h-100">
+                            <div class="position-relative d-flex justify-content-center align-items-center" style="height: 200px; background-color: #f8f9fa;">
+                                <i class="fas fa-file-pdf knowledge-icon"></i>
+                                <span class="file-badge"><i class="fas fa-file-alt"></i></span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Protocolos de seguridad</h5>
+                                <p class="card-text text-muted">Documento PDF con los protocolos de seguridad e higiene actualizados para el spa.</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted"><i class="far fa-calendar-alt me-1"></i> 10 Jun 2023</small>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary me-1">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recurso 3 - Imagen -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card knowledge-card h-100">
+                            <div class="position-relative">
+                                <img src="https://via.placeholder.com/300x200?text=Diagrama+Procedimiento" class="card-img-top file-preview" alt="Imagen">
+                                <span class="file-badge"><i class="fas fa-image"></i></span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Diagrama de procedimientos</h5>
+                                <p class="card-text text-muted">Flujo de trabajo estandarizado para tratamientos faciales premium.</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted"><i class="far fa-calendar-alt me-1"></i> 5 Jun 2023</small>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary me-1">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recurso 4 - Enlace -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card knowledge-card h-100">
+                            <div class="position-relative d-flex justify-content-center align-items-center" style="height: 200px; background-color: #f8f9fa;">
+                                <i class="fas fa-link knowledge-icon"></i>
+                                <span class="file-badge"><i class="fas fa-external-link-alt"></i></span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Nuevos productos 2023</h5>
+                                <p class="card-text text-muted">Enlace al catálogo de nuevos productos de belleza disponibles este trimestre.</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted"><i class="far fa-calendar-alt me-1"></i> 1 Jun 2023</small>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary me-1">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paginación -->
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Siguiente</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para añadir nuevo recurso de conocimiento -->
+    <div class="modal fade" id="addKnowledgeModal" tabindex="-1" aria-labelledby="addKnowledgeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--correjir-primary); color: white;">
+                    <h5 class="modal-title" id="addKnowledgeModalLabel">Agregar Nuevo Recurso</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="knowledgeForm">
+                        <div class="mb-3">
+                            <label for="resourceTitle" class="form-label">Título del recurso</label>
+                            <input type="text" class="form-control" id="resourceTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="resourceDescription" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="resourceDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="resourceType" class="form-label">Tipo de recurso</label>
+                            <select class="form-select" id="resourceType" required>
+                                <option value="">Seleccionar tipo...</option>
+                                <option value="video">Video</option>
+                                <option value="document">Documento (PDF, Word, etc.)</option>
+                                <option value="image">Imagen</option>
+                                <option value="text">Texto</option>
+                                <option value="link">Enlace web</option>
+                            </select>
+                        </div>
+
+                        <!-- Campos dinámicos según tipo de recurso -->
+                        <div id="videoFields" class="resource-fields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="videoFile" class="form-label">Subir video</label>
+                                <input class="form-control" type="file" id="videoFile" accept="video/*">
+                                <small class="text-muted">Formatos aceptados: MP4, AVI, MOV (Máx. 100MB)</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="videoUrl" class="form-label">O URL del video</label>
+                                <input type="url" class="form-control" id="videoUrl" placeholder="https://">
+                            </div>
+                        </div>
+
+                        <div id="documentFields" class="resource-fields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="documentFile" class="form-label">Subir documento</label>
+                                <input class="form-control" type="file" id="documentFile" accept=".pdf,.doc,.docx,.txt">
+                                <small class="text-muted">Formatos aceptados: PDF, DOC, DOCX, TXT (Máx. 20MB)</small>
+                            </div>
+                        </div>
+
+                        <div id="imageFields" class="resource-fields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="imageFile" class="form-label">Subir imagen</label>
+                                <input class="form-control" type="file" id="imageFile" accept="image/*">
+                                <small class="text-muted">Formatos aceptados: JPG, PNG, GIF (Máx. 10MB)</small>
+                            </div>
+                        </div>
+
+                        <div id="textFields" class="resource-fields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="textContent" class="form-label">Contenido de texto</label>
+                                <textarea class="form-control" id="textContent" rows="5"></textarea>
+                            </div>
+                        </div>
+
+                        <div id="linkFields" class="resource-fields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="linkUrl" class="form-label">URL del recurso</label>
+                                <input type="url" class="form-control" id="linkUrl" placeholder="https://" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="resourceTags" class="form-label">Etiquetas</label>
+                            <input type="text" class="form-control" id="resourceTags" placeholder="Separar con comas">
+                            <small class="text-muted">Ej: masaje, facial, protocolo, 2023</small>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="isPrivate">
+                            <label class="form-check-label" for="isPrivate">
+                                Recurso privado (solo visible para administradores)
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-correjir">
+                        <i class="fas fa-save me-1"></i> Guardar Recurso
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para visualizar recurso -->
+    <div class="modal fade" id="viewResourceModal" tabindex="-1" aria-labelledby="viewResourceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--correjir-primary); color: white;">
+                    <h5 class="modal-title" id="viewResourceModalLabel">Título del Recurso</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Contenido del recurso -->
+                            <div id="resourceContent" class="mb-4">
+                                <!-- Aquí se mostraría el video, imagen, documento, etc. -->
+                                <div class="ratio ratio-16x9">
+                                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <!-- Metadatos del recurso -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">Detalles del recurso</h6>
+                                    <p class="card-text" id="resourceFullDescription">Descripción completa del recurso que se está visualizando.</p>
+                                    <ul class="list-group list-group-flush mb-3">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span><i class="fas fa-user me-2"></i>Subido por:</span>
+                                            <span>Juan Pérez</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span><i class="far fa-calendar-alt me-2"></i>Fecha:</span>
+                                            <span>15 Jun 2023</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span><i class="fas fa-tags me-2"></i>Etiquetas:</span>
+                                            <div>
+                                                <span class="badge bg-light text-dark me-1">masaje</span>
+                                                <span class="badge bg-light text-dark">técnicas</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary">
+                                            <i class="fas fa-download me-2"></i>Descargar
+                                        </button>
+                                        <button class="btn btn-outline-secondary">
+                                            <i class="fas fa-share-alt me-2"></i>Compartir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-correjir" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-1"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.min.js"></script>
+    <script>
+        // Menú hamburguesa
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.overlay');
+
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+
+            // Mostrar campos según tipo de recurso seleccionado
+            const resourceType = document.getElementById('resourceType');
+            const allFields = document.querySelectorAll('.resource-fields');
+            
+            resourceType.addEventListener('change', function() {
+                // Ocultar todos los campos primero
+                allFields.forEach(field => {
+                    field.style.display = 'none';
+                });
+                
+                // Mostrar los campos correspondientes al tipo seleccionado
+                const selectedType = this.value;
+                if (selectedType) {
+                    document.getElementById(selectedType + 'Fields').style.display = 'block';
+                }
+            });
+
+            // Simular visualización de recurso
+            document.querySelectorAll('.btn-outline-primary').forEach(btn => {
+                if (btn.innerHTML.includes('fa-eye')) {
+                    btn.addEventListener('click', function() {
+                        const modal = new bootstrap.Modal(document.getElementById('viewResourceModal'));
+                        modal.show();
+                    });
+                }
+            });
+
+            // Configuración existente del calendario y gráficos...
+        });
+    </script>
+</body>
+</html>
